@@ -340,14 +340,18 @@ ngx_http_arg2(ngx_http_request_t *r, u_char *name, size_t len, ngx_str_t *value)
     p = r->args.data;
     last = p + r->args.len;
     for ( /* void */ ; p < last; p++) {
-        pos++;
+        if ( *(p - 1) == '&' ) {
+            pos = 1;
+        }
+
         if (p + len > last) {
             return NGX_DECLINED;
         }
         if (ngx_strncasecmp(p, name, len) != 0) {
             continue;
         }
-        if (p == r->args.data || ( *(p + len) == '&' && pos == 0 ) || (p + len) == last || ( *(p + len) == '=' && *(p - 1) == '&') ) {
+
+        if (( *(p + len) == '&' && pos == 0 ) || (p + len) == last || ( *(p + len) == '=' && *(p - 1) == '&') ) {
             if ((p + len) < last && *(p + len) == '=') {
                 value->data = p + len + 1;
                 p = ngx_strlchr(p, last, '&');
